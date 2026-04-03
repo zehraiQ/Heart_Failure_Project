@@ -1,9 +1,15 @@
 import pandas as pd
 import sqlite3
-# 1. StandardScaler kütüphanesini içe aktarma 
 from sklearn.preprocessing import StandardScaler
-# Veriyi bölmek için train_test_split'i içe aktarma 
 from sklearn.model_selection import train_test_split
+
+# =======================================================
+# --- Algoritmaları İçe Aktarma  ---
+# =======================================================
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 # Veritabani yolunu tam olarak belirleme
 db_file_path = 'database/HeartFailure_DB.db'
@@ -53,16 +59,38 @@ try:
     # --- Veriyi Eğitim (Train) ve Test Olarak Bölme ---
     # =======================================================
     print("\n--- Veriyi Eğitim (Train) ve Test Olarak Bölme ---")
-    
-    # Veriyi %80 Eğitim (Train), %20 Test olacak şekilde ayiriyoruz
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
     print("Veriler %80 Eğitim ve %20 Test olarak başariyla bölündü.")
-    
-    # Doğrulama için boyutlari yazdirma
     print(f"Toplam Veri Sayisi: {X.shape[0]} satir")
     print(f"Eğitim Seti (X_train) Sayisi: {X_train.shape[0]} satir")
     print(f"Test Seti (X_test) Sayisi: {X_test.shape[0]} satir")
+    
+    # =======================================================
+    # --- Modelleri Varsayılan Ayarlarla Başlatma ---
+    # =======================================================
+    print("\n--- Modelleri Varsayilan Ayarlarla (Default) Başlatma ---")
+    
+    # Boş parantez () kullanmak, varsayılan parametrelerle başlatmak anlamına gelir.
+    # Değerlendirme sırasında sonuçların tutarlılığını sağlamak için ağaç algoritmalarıyla random_state=42 kullanıyoruz.
+    knn_model = KNeighborsClassifier()
+    nb_model = GaussianNB()
+    dt_model = DecisionTreeClassifier(random_state=42)
+    rf_model = RandomForestClassifier(random_state=42)
+    
+    print("KNN, Naive Bayes, Decision Tree ve Random Forest modelleri başariyla Initialize edildi!")
+    
+    # =======================================================
+    # --- Modelleri Eğitme (Model Training) ---
+    # =======================================================
+    print("\n--- Modelleri Eğitim Verisiyle Eğitme (Training) ---")
+    
+    # Her modelin eğitim verilerinden öğrenmesi için FIT fonksiyonunu kullanıyoruz.
+    knn_model.fit(X_train, y_train)
+    nb_model.fit(X_train, y_train)
+    dt_model.fit(X_train, y_train)
+    rf_model.fit(X_train, y_train)
+    
+    print("Bütün modeller eğitim verileriyle (X_train, y_train) başariyla eğitildi!")
     # =======================================================
 
 except FileNotFoundError:

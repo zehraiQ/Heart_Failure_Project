@@ -1,105 +1,99 @@
 import pandas as pd
 import sqlite3
+import joblib  # Modelleri kaydetme kütüphanesi
+import os      # Klasör oluşturmak için
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-# =======================================================
-# --- Algoritmaları İçe Aktarma  ---
-# =======================================================
+# --- Algoritmaları ve Metrikleri İçe Aktarma ---
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
-# Veritabani yolunu tam olarak belirleme
+# Veritabani yolu
 db_file_path = 'database/HeartFailure_DB.db'
 
 try:
-    # 2. Veritabani bağlantisini oluşturma
+    # 2. Veritabani bağlantisi
     conn = sqlite3.connect(db_file_path)
     print("Veritabanina başariyla bağlanildi.")
 
-    # 3. Tüm verileri getirmek için SQL sorgusu yazma
+    # 3. Verileri getirme
     sql_query = "SELECT * FROM heart_failure_records" 
-    
-    # 4. Sorguyu çaliştirma ve sonucu DataFrame'e dönüştürme
     df_from_db = pd.read_sql(sql_query, conn)
-    print("Veriler başariyla getirildi ve DataFrame'e dönüştürüldü!\n")
+    print("Veriler başariyla getirildi!\n")
     
-    # =======================================================
-    # --- Eksik Veri (Missing Values) Kontrolü ---
-    # =======================================================
-    print("--- Eksik Veri (Missing Values) Kontrolü ---")
-    missing_values = df_from_db.isnull().sum()
-    if missing_values.sum() == 0:
-        print("Harika! Veri seti tamamen temiz, eksik değer (null) yok.")
-    else:
-        print("Eksik değerler bulundu. Temizleniyor...")
-        df_from_db = df_from_db.dropna()
-        print("Eksik veri içeren satirlar başariyla silindi.")
+    # --- Eksik Veri Kontrolü ---
+    df_from_db = df_from_db.dropna()
     
-    # =======================================================
     # --- Bağimsiz (X) ve Bağimli (y) Değişkenleri Ayirma ---
-    # =======================================================
-    print("\n--- Bağimsiz (X) ve Bağimli (y) Değişkenleri Ayirma ---")
     X = df_from_db.drop('DEATH_EVENT', axis=1)
     y = df_from_db['DEATH_EVENT']
-    print("Veriler X (Özellikler) ve y (Hedef) olarak başariyla ayrildi.")
 
-    # =======================================================
-    # --- Verileri Ölçeklendirme (Data Scaling) ---
-    # =======================================================
-    print("\n--- Verileri Ölçeklendirme (StandardScaler) ---")
+    # --- Verileri Ölçeklendirme ---
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     X = pd.DataFrame(X_scaled, columns=X.columns)
-    print("Veriler başariyla standartlaştirildi (Ölçeklendirildi).")
 
-    # =======================================================
-    # --- Veriyi Eğitim (Train) ve Test Olarak Bölme ---
-    # =======================================================
-    print("\n--- Veriyi Eğitim (Train) ve Test Olarak Bölme ---")
+    # --- Veriyi Eğitim ve Test Olarak Bölme ---
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    print("Veriler %80 Eğitim ve %20 Test olarak başariyla bölündü.")
-    print(f"Toplam Veri Sayisi: {X.shape[0]} satir")
-    print(f"Eğitim Seti (X_train) Sayisi: {X_train.shape[0]} satir")
-    print(f"Test Seti (X_test) Sayisi: {X_test.shape[0]} satir")
     
-    # =======================================================
-    # --- Modelleri Varsayılan Ayarlarla Başlatma ---
-    # =======================================================
-    print("\n--- Modelleri Varsayilan Ayarlarla (Default) Başlatma ---")
-    
-    # Boş parantez () kullanmak, varsayılan parametrelerle başlatmak anlamına gelir.
-    # Değerlendirme sırasında sonuçların tutarlılığını sağlamak için ağaç algoritmalarıyla random_state=42 kullanıyoruz.
+    # --- Modelleri Başlatma ve Eğitme ---
     knn_model = KNeighborsClassifier()
     nb_model = GaussianNB()
     dt_model = DecisionTreeClassifier(random_state=42)
     rf_model = RandomForestClassifier(random_state=42)
-    
-    print("KNN, Naive Bayes, Decision Tree ve Random Forest modelleri başariyla Initialize edildi!")
-    
-    # =======================================================
-    # --- Modelleri Eğitme (Model Training) ---
-    # =======================================================
-    print("\n--- Modelleri Eğitim Verisiyle Eğitme (Training) ---")
-    
-    # Her modelin eğitim verilerinden öğrenmesi için FIT fonksiyonunu kullanıyoruz.
+
     knn_model.fit(X_train, y_train)
     nb_model.fit(X_train, y_train)
     dt_model.fit(X_train, y_train)
     rf_model.fit(X_train, y_train)
+    print("Bütün modeller başariyla eğitildi!")
+
+    # --- Tahmin ve Değerlendirme ---
+    results = [
+        ("KNN", knn_model.predict(X_test)),
+        ("Naive Bayes", nb_model.predict(X_test)),
+        ("Decision Tree", dt_model.predict(X_test)),
+        ("Random Forest", rf_model.predict(X_test))
+    ]
+
+    print("\n--- Model Değerlendirme Sonuçlari ---")
+    for name, preds in results:
+        acc = accuracy_score(y_test, preds)
+        f1 = f1_score(y_test, preds)
+        cm = confusion_matrix(y_test, preds)
+        print(f"\n[{name}] Accuracy: {acc:.4f} | F1-Score: {f1:.4f}")
+        print(f"Confusion Matrix:\n{cm}")
+
+    # =======================================================
+    # --- Modelleri ve Scaler'ı Kaydetme (.pkl) ---
+    # =======================================================
+    print("\n--- Modeller Kaydediliyor... ---")
     
-    print("Bütün modeller eğitim verileriyle (X_train, y_train) başariyla eğitildi!")
+    # Eğer mevcut değilse, dosyaları kaydetmek için bir klasör oluşturma
+    model_folder = 'saved_models'
+    if not os.path.exists(model_folder):
+        os.makedirs(model_folder)
+    
+    # Scaler'ın kaydedilmesi (Gelecekteki yeni verileri işlemek için çok önemlidir)
+    joblib.dump(scaler, f'{model_folder}/scaler.pkl')
+    
+    # Dört modelin de kaydedilmesi
+    joblib.dump(knn_model, f'{model_folder}/knn_model.pkl')
+    joblib.dump(nb_model, f'{model_folder}/naive_bayes_model.pkl')
+    joblib.dump(dt_model, f'{model_folder}/decision_tree_model.pkl')
+    joblib.dump(rf_model, f'{model_folder}/random_forest_model.pkl')
+
+    print(f"✅ 5 adet dosya (4 model + 1 scaler) '{model_folder}' klasörüne kaydedildi.")
     # =======================================================
 
-except FileNotFoundError:
-    print(f"Hata: Belirtilen yolda veritabani bulunamadi. '{db_file_path}'.")
 except Exception as e:
     print(f"Bir hata oluştu: {e}")
 
 finally:
-    # 6. Veritabani bağlantisini kapatma
     if 'conn' in locals():
         conn.close()
         print("\nVeritabani bağlantisi kapatildi.")

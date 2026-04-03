@@ -36,4 +36,4 @@ except Exception as e:
 finally:
     if 'conn' in locals():
         conn.close()
-        print("🔒 Bağlanti kapatildi.")
+        print("Bağlanti kapatildi.")

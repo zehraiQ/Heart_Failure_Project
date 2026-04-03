@@ -87,7 +87,7 @@ try:
     joblib.dump(dt_model, f'{model_folder}/decision_tree_model.pkl')
     joblib.dump(rf_model, f'{model_folder}/random_forest_model.pkl')
 
-    print(f"✅ 5 adet dosya (4 model + 1 scaler) '{model_folder}' klasörüne kaydedildi.")
+    print(f"5 adet dosya (4 model + 1 scaler) '{model_folder}' klasörüne kaydedildi.")
     # =======================================================
 
 except Exception as e:

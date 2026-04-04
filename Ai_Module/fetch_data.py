@@ -70,24 +70,21 @@ try:
 
     # =======================================================
     # --- Modelleri ve Scaler'ı Kaydetme (.pkl) ---
+    # NOT: Bu kısım isteğiniz üzerine geçici olarak devre dışı bırakıldı.
     # =======================================================
-    print("\n--- Modeller Kaydediliyor... ---")
-    
-    # Eğer mevcut değilse, dosyaları kaydetmek için bir klasör oluşturma
-    model_folder = 'saved_models'
-    if not os.path.exists(model_folder):
-        os.makedirs(model_folder)
-    
-    # Scaler'ın kaydedilmesi (Gelecekteki yeni verileri işlemek için çok önemlidir)
-    joblib.dump(scaler, f'{model_folder}/scaler.pkl')
-    
-    # Dört modelin de kaydedilmesi
-    joblib.dump(knn_model, f'{model_folder}/knn_model.pkl')
-    joblib.dump(nb_model, f'{model_folder}/naive_bayes_model.pkl')
-    joblib.dump(dt_model, f'{model_folder}/decision_tree_model.pkl')
-    joblib.dump(rf_model, f'{model_folder}/random_forest_model.pkl')
-
-    print(f"5 adet dosya (4 model + 1 scaler) '{model_folder}' klasörüne kaydedildi.")
+    # print("\n--- Modeller Kaydediliyor... ---")
+    # 
+    # model_folder = 'saved_models'
+    # if not os.path.exists(model_folder):
+    #     os.makedirs(model_folder)
+    # 
+    # joblib.dump(scaler, f'{model_folder}/scaler.pkl')
+    # joblib.dump(knn_model, f'{model_folder}/knn_model.pkl')
+    # joblib.dump(nb_model, f'{model_folder}/naive_bayes_model.pkl')
+    # joblib.dump(dt_model, f'{model_folder}/decision_tree_model.pkl')
+    # joblib.dump(rf_model, f'{model_folder}/random_forest_model.pkl')
+    # 
+    # print(f"5 adet dosya (4 model + 1 scaler) '{model_folder}' klasörüne kaydedildi.")
     # =======================================================
 
 except Exception as e:

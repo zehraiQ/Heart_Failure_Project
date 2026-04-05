@@ -94,7 +94,7 @@ def make_prediction(data: PatientData):
         # 5. VERİTABANINA KAYIT İŞLEMİ (Görev 8.2)
         # ============================================================
         try:
-            db_path = os.path.join("..", "database", "HeartFailure_DB.db")
+           db_path = os.path.join(os.path.dirname(BASE_DIR), "Database", "HeartFailure_DB.db")
             with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 all_values = raw_features + [rf_pred]

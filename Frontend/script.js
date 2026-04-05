@@ -7,7 +7,7 @@
 'use strict';
 
 // ── Config ──────────────────────────────────────────────────
-const API_URL       = 'http://localhost:8000/predict';
+const API_URL       = 'https://heart-failure-project.onrender.com';
 const MIN_LOAD_MS   = 1100; // minimum loading animation duration
 
 // ── Model metadata ───────────────────────────────────────────

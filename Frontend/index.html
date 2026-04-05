@@ -1,1190 +1,359 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Heart Failure Prediction System - AI-powered cardiovascular risk assessment"
-    />
-    <title>Heart Failure Prediction System</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CardioSense — Heart Failure Prediction System</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Bootstrap Icons -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <!-- Google Fonts - Inter -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Custom CSS -->
-    <link href="style.css" rel="stylesheet" />
-  </head>
-  <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark medical-navbar">
-      <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="#">
-          <i class="bi bi-heart-pulse medical-icon me-2"></i>
-          <span class="brand-text">Heart Failure Prediction System</span>
-        </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">
-                <i class="bi bi-house-door me-1"></i>Home
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#about">
-                <i class="bi bi-info-circle me-1"></i>About
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#contact">
-                <i class="bi bi-envelope me-1"></i>Contact
-              </a>
-            </li>
-          </ul>
+  <!-- Google Fonts: Syne (UI) + Instrument Serif (Display) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'instrument': ['"Instrument Serif"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="font-syne min-h-screen overflow-x-hidden">
+
+  <!-- ─── BACKGROUND LAYERS ───────────────────────────── -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-grain" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+
+  <!-- ─── NAVBAR ──────────────────────────────────────── -->
+  <nav class="navbar-glass">
+    <div class="nav-inner">
+      <!-- Logo -->
+      <a href="#" class="logo-group">
+        <div class="logo-mark">
+          <svg width="34" height="28" viewBox="0 0 34 28" fill="none">
+            <path d="M1 14 L6 14 L9 6 L13 22 L17 2 L21 24 L25 10 L28 18 L33 18"
+              stroke="var(--cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-      </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero-section">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-lg-7">
-            <h1 class="hero-title">
-              <i class="bi bi-shield-check me-2"></i>
-              Advanced Heart Failure Prediction
-            </h1>
-            <p class="hero-subtitle">
-              Using machine learning algorithms to predict cardiovascular risk
-              with high accuracy. Enter patient data below for comprehensive
-              heart failure risk assessment.
-            </p>
-            <div class="hero-badges">
-              <span class="badge bg-primary me-2">
-                <i class="bi bi-cpu me-1"></i>ML-Powered
-              </span>
-              <span class="badge bg-success me-2">
-                <i class="bi bi-check-circle me-1"></i>FDA Compliant
-              </span>
-              <span class="badge bg-info">
-                <i class="bi bi-graph-up me-1"></i>Real-time Analysis
-              </span>
-            </div>
-          </div>
-          <div class="col-lg-5 text-center d-none d-lg-block">
-            <div class="hero-illustration">
-              <i class="bi bi-heart-pulse-fill hero-heart"></i>
-            </div>
-          </div>
+        <div class="logo-text">
+          <span class="logo-name">CardioSense</span>
+          <span class="logo-sub">Heart Failure Prediction</span>
         </div>
-      </div>
-    </header>
+      </a>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <div class="container">
-        <div class="row g-4">
-          <!-- Input Form Section -->
-          <div class="col-xl-6">
-            <div class="card form-card">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="bi bi-clipboard2-pulse me-2"></i>
-                  Patient Data Input
-                </h3>
-                <p class="card-subtitle">
-                  Enter the patient's clinical parameters for analysis
-                </p>
-              </div>
-              <div class="card-body">
-                <form id="predictionForm" class="needs-validation" novalidate>
-                  <div class="row g-3">
-                    <!-- Age -->
-                    <div class="col-md-6">
-                      <label for="age" class="form-label">
-                        <i class="bi bi-person me-1"></i>Age
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="age"
-                          name="age"
-                          min="1"
-                          max="120"
-                          placeholder="e.g., 55"
-                          required
-                        />
-                        <span class="input-group-text">years</span>
-                      </div>
-                      <div class="invalid-feedback">
-                        Please enter a valid age (1-120)
-                      </div>
-                    </div>
-
-                    <!-- Sex -->
-                    <div class="col-md-6">
-                      <label for="sex" class="form-label">
-                        <i class="bi bi-gender-ambiguous me-1"></i>Sex
-                      </label>
-                      <select class="form-select" id="sex" name="sex" required>
-                        <option value="">Select...</option>
-                        <option value="1">Male</option>
-                        <option value="0">Female</option>
-                      </select>
-                      <div class="invalid-feedback">Please select sex</div>
-                    </div>
-
-                    <!-- Anaemia -->
-                    <div class="col-md-6">
-                      <label for="anaemia" class="form-label">
-                        <i class="bi bi-droplet me-1"></i>Anaemia
-                      </label>
-                      <select
-                        class="form-select"
-                        id="anaemia"
-                        name="anaemia"
-                        required
-                      >
-                        <option value="">Select...</option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                      </select>
-                      <div class="form-text">Decreased red blood cells</div>
-                      <div class="invalid-feedback">
-                        Please select an option
-                      </div>
-                    </div>
-
-                    <!-- Diabetes -->
-                    <div class="col-md-6">
-                      <label for="diabetes" class="form-label">
-                        <i class="bi bi-droplet-half me-1"></i>Diabetes
-                      </label>
-                      <select
-                        class="form-select"
-                        id="diabetes"
-                        name="diabetes"
-                        required
-                      >
-                        <option value="">Select...</option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                      </select>
-                      <div class="form-text">High blood sugar condition</div>
-                      <div class="invalid-feedback">
-                        Please select an option
-                      </div>
-                    </div>
-
-                    <!-- High Blood Pressure -->
-                    <div class="col-md-6">
-                      <label for="high_blood_pressure" class="form-label">
-                        <i class="bi bi-heart me-1"></i>High Blood Pressure
-                      </label>
-                      <select
-                        class="form-select"
-                        id="high_blood_pressure"
-                        name="high_blood_pressure"
-                        required
-                      >
-                        <option value="">Select...</option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                      </select>
-                      <div class="form-text">Hypertension condition</div>
-                      <div class="invalid-feedback">
-                        Please select an option
-                      </div>
-                    </div>
-
-                    <!-- Smoking -->
-                    <div class="col-md-6">
-                      <label for="smoking" class="form-label">
-                        <i class="bi bi-cloud-smoke me-1"></i>Smoking Status
-                      </label>
-                      <select
-                        class="form-select"
-                        id="smoking"
-                        name="smoking"
-                        required
-                      >
-                        <option value="">Select...</option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                      </select>
-                      <div class="form-text">Current smoker status</div>
-                      <div class="invalid-feedback">
-                        Please select an option
-                      </div>
-                    </div>
-
-                    <!-- Ejection Fraction -->
-                    <div class="col-md-6">
-                      <label for="ejection_fraction" class="form-label">
-                        <i class="bi bi-activity me-1"></i>Ejection Fraction
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="ejection_fraction"
-                          name="ejection_fraction"
-                          min="1"
-                          max="100"
-                          placeholder="e.g., 35"
-                          required
-                        />
-                        <span class="input-group-text">%</span>
-                      </div>
-                      <div class="form-text">
-                        Percentage of blood pumped per beat
-                      </div>
-                      <div class="invalid-feedback">
-                        Please enter a valid percentage (1-100)
-                      </div>
-                    </div>
-
-                    <!-- Creatinine Phosphokinase -->
-                    <div class="col-md-6">
-                      <label for="creatinine_phosphokinase" class="form-label">
-                        <i class="bi bi-flask me-1"></i>Creatinine Phosphokinase
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="creatinine_phosphokinase"
-                          name="creatinine_phosphokinase"
-                          min="0"
-                          max="10000"
-                          placeholder="e.g., 150"
-                          required
-                        />
-                        <span class="input-group-text">mcg/L</span>
-                      </div>
-                      <div class="form-text">Level of CPK enzyme in blood</div>
-                      <div class="invalid-feedback">
-                        Please enter a valid value (0-10000)
-                      </div>
-                    </div>
-
-                    <!-- Serum Creatinine -->
-                    <div class="col-md-6">
-                      <label for="serum_creatinine" class="form-label">
-                        <i class="bi bi-droplet-fill me-1"></i>Serum Creatinine
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="serum_creatinine"
-                          name="serum_creatinine"
-                          min="0.1"
-                          max="15"
-                          step="0.1"
-                          placeholder="e.g., 1.2"
-                          required
-                        />
-                        <span class="input-group-text">mg/dL</span>
-                      </div>
-                      <div class="form-text">Level of creatinine in serum</div>
-                      <div class="invalid-feedback">
-                        Please enter a valid value (0.1-15)
-                      </div>
-                    </div>
-
-                    <!-- Serum Sodium -->
-                    <div class="col-md-6">
-                      <label for="serum_sodium" class="form-label">
-                        <i class="bi bi-snow2 me-1"></i>Serum Sodium
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="serum_sodium"
-                          name="serum_sodium"
-                          min="100"
-                          max="150"
-                          placeholder="e.g., 136"
-                          required
-                        />
-                        <span class="input-group-text">mEq/L</span>
-                      </div>
-                      <div class="form-text">Level of sodium in serum</div>
-                      <div class="invalid-feedback">
-                        Please enter a valid value (100-150)
-                      </div>
-                    </div>
-
-                    <!-- Platelets -->
-                    <div class="col-md-6">
-                      <label for="platelets" class="form-label">
-                        <i class="bi bi-circle-fill me-1"></i>Platelets
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="platelets"
-                          name="platelets"
-                          min="50000"
-                          max="500000"
-                          placeholder="e.g., 250000"
-                          required
-                        />
-                        <span class="input-group-text">mcL</span>
-                      </div>
-                      <div class="form-text">Platelet count in blood</div>
-                      <div class="invalid-feedback">
-                        Please enter a valid value (50000-500000)
-                      </div>
-                    </div>
-
-                    <!-- Time -->
-                    <div class="col-md-6">
-                      <label for="time" class="form-label">
-                        <i class="bi bi-clock me-1"></i>Follow-up Period
-                      </label>
-                      <div class="input-group">
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="time"
-                          name="time"
-                          min="1"
-                          max="300"
-                          placeholder="e.g., 90"
-                          required
-                        />
-                        <span class="input-group-text">days</span>
-                      </div>
-                      <div class="form-text">Follow-up period in days</div>
-                      <div class="invalid-feedback">
-                        Please enter a valid value (1-300)
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Form Actions -->
-                  <div class="form-actions mt-4">
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary me-2"
-                      id="resetBtn"
-                    >
-                      <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-                    </button>
-                    <button
-                      type="submit"
-                      class="btn btn-primary btn-predict"
-                      id="predictBtn"
-                    >
-                      <span class="btn-text">
-                        <i class="bi bi-brain me-1"></i>Predict Heart Failure
-                        Risk
-                      </span>
-                      <span class="btn-loading d-none">
-                        <span
-                          class="spinner-border spinner-border-sm me-2"
-                          role="status"
-                          aria-hidden="true"
-                        ></span>
-                        Analyzing...
-                      </span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <!-- Results Dashboard Section -->
-          <div class="col-xl-6">
-            <div class="card results-card">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="bi bi-graph-up me-2"></i>
-                  Prediction Results
-                </h3>
-                <p class="card-subtitle">
-                  ML model predictions based on patient data
-                </p>
-              </div>
-              <div class="card-body">
-                <!-- Initial State -->
-                <div id="initialState" class="initial-state">
-                  <div class="empty-state">
-                    <i class="bi bi-clipboard-data"></i>
-                    <h4>No Predictions Yet</h4>
-                    <p>
-                      Please fill in the patient data form and click "Predict"
-                      to see the analysis results.
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Loading State -->
-                <div id="loadingState" class="loading-state d-none">
-                  <div class="text-center">
-                    <div class="custom-spinner">
-                      <div class="spinner-grow text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                    <h5 class="mt-3">Analyzing Patient Data</h5>
-                    <p class="text-muted">
-                      Running multiple machine learning models...
-                    </p>
-                    <div class="progress-bar-container">
-                      <div class="progress">
-                        <div
-                          class="progress-bar progress-bar-striped progress-bar-animated"
-                          role="progressbar"
-                          style="width: 100%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Results State -->
-                <div id="resultsState" class="results-state d-none">
-                  <div class="results-header">
-                    <h4>
-                      <i class="bi bi-check-circle me-2"></i>
-                      Prediction Complete
-                    </h4>
-                    <p class="text-muted">
-                      Based on the patient data, the following predictions were
-                      generated:
-                    </p>
-                  </div>
-
-                  <div class="row g-3">
-                    <!-- KNN Card -->
-                    <div class="col-md-6">
-                      <div class="result-card" id="knnCard">
-                        <div class="result-card-header">
-                          <i class="bi bi-geo-alt"></i>
-                          <span>K-Nearest Neighbors</span>
-                        </div>
-                        <div class="result-card-body">
-                          <div class="result-icon">
-                            <i class="bi bi-robot"></i>
-                          </div>
-                          <div class="result-status" id="knnResult">
-                            <span class="result-value">--</span>
-                            <span class="result-label">Prediction</span>
-                          </div>
-                        </div>
-                        <div class="result-card-footer" id="knnFooter">
-                          <span class="status-badge">Awaiting</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Naive Bayes Card -->
-                    <div class="col-md-6">
-                      <div class="result-card" id="naiveBayesCard">
-                        <div class="result-card-header">
-                          <i class="bi bi-calculator"></i>
-                          <span>Naive Bayes</span>
-                        </div>
-                        <div class="result-card-body">
-                          <div class="result-icon">
-                            <i class="bi bi-psi"></i>
-                          </div>
-                          <div class="result-status" id="naiveBayesResult">
-                            <span class="result-value">--</span>
-                            <span class="result-label">Prediction</span>
-                          </div>
-                        </div>
-                        <div class="result-card-footer" id="naiveBayesFooter">
-                          <span class="status-badge">Awaiting</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Decision Tree Card -->
-                    <div class="col-md-6">
-                      <div class="result-card" id="decisionTreeCard">
-                        <div class="result-card-header">
-                          <i class="bi bi-diagram-3"></i>
-                          <span>Decision Tree</span>
-                        </div>
-                        <div class="result-card-body">
-                          <div class="result-icon">
-                            <i class="bi bi-tree"></i>
-                          </div>
-                          <div class="result-status" id="decisionTreeResult">
-                            <span class="result-value">--</span>
-                            <span class="result-label">Prediction</span>
-                          </div>
-                        </div>
-                        <div class="result-card-footer" id="decisionTreeFooter">
-                          <span class="status-badge">Awaiting</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Random Forest Card -->
-                    <div class="col-md-6">
-                      <div class="result-card" id="randomForestCard">
-                        <div class="result-card-header">
-                          <i class="bi bi-flower1"></i>
-                          <span>Random Forest</span>
-                        </div>
-                        <div class="result-card-body">
-                          <div class="result-icon">
-                            <i class="bi bi-flower2"></i>
-                          </div>
-                          <div class="result-status" id="randomForestResult">
-                            <span class="result-value">--</span>
-                            <span class="result-label">Prediction</span>
-                          </div>
-                        </div>
-                        <div class="result-card-footer" id="randomForestFooter">
-                          <span class="status-badge">Awaiting</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Summary -->
-                  <div class="results-summary mt-4" id="resultsSummary">
-                    <div class="summary-card">
-                      <div class="summary-icon">
-                        <i class="bi bi-clipboard2-check"></i>
-                      </div>
-                      <div class="summary-content">
-                        <h5>Analysis Summary</h5>
-                        <p id="summaryText">--</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Error Message -->
-                  <div class="error-message mt-4 d-none" id="errorMessage">
-                    <div class="alert alert-danger" role="alert">
-                      <i class="bi bi-exclamation-triangle me-2"></i>
-                      <span id="errorText"
-                        >An error occurred while processing your request.</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Status pills -->
+      <div class="nav-pills">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          API Live
         </div>
-      </div>
-    </main>
-
-    <!-- About Section -->
-    <section id="about" class="about-section">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <h2 class="section-title">
-              <i class="bi bi-info-circle me-2"></i>
-              About This System
-            </h2>
-          </div>
-        </div>
-        <div class="row g-4">
-          <div class="col-md-4">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="bi bi-shield-check"></i>
-              </div>
-              <h4>High Accuracy</h4>
-              <p>
-                Our ensemble of machine learning algorithms provides highly
-                accurate heart failure predictions based on clinical data.
-              </p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="bi bi-lightning"></i>
-              </div>
-              <h4>Fast Results</h4>
-              <p>
-                Get instant predictions using multiple algorithms
-                simultaneously. Results are generated in milliseconds.
-              </p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="bi bi-people"></i>
-              </div>
-              <h4>Clinically Validated</h4>
-              <p>
-                Developed using the UCI Heart Failure Clinical Records dataset
-                with rigorous validation processes.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <p class="footer-text mb-0">
-              <i class="bi bi-heart-pulse me-2"></i>
-              Heart Failure Prediction System
-            </p>
-          </div>
-          <div class="col-md-6 text-md-end">
-            <p class="footer-subtext mb-0">
-              Powered by Machine Learning | For Educational Purposes
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
-
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      <div
-        id="resultToast"
-        class="toast"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
-        <div class="toast-header">
-          <i class="bi bi-bell me-2 text-primary"></i>
-          <strong class="me-auto">Notification</strong>
-          <small>Just now</small>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-          Prediction completed successfully!
+        <div class="status-pill status-pill--muted">
+          <i class="fa-solid fa-microchip"></i>
+          4 ML Models
         </div>
       </div>
     </div>
+  </nav>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="script.js"></script>
+  <!-- ─── MAIN ─────────────────────────────────────────── -->
+  <main class="main-wrapper">
+    <div class="layout-grid">
 
-    <script>
-      (function () {
-        "use strict";
+      <!-- ═══ LEFT: FORM COLUMN ═════════════════════════ -->
+      <section class="left-col">
 
-        if (window.self === window.top) {
-          return;
-        }
+        <!-- Hero -->
+        <header class="hero-header">
+          <p class="eyebrow">Clinical Decision Support</p>
+          <h1 class="hero-title">
+            Heart Failure<br />
+            <em class="hero-em">Risk Analysis</em>
+          </h1>
+          <p class="hero-sub">
+            Enter 12 patient biomarkers below. Four machine-learning models will return a cardiac risk assessment in real time.
+          </p>
+        </header>
 
-        if (window.__iframeHighlightInitialized) {
-          return;
-        }
-        window.__iframeHighlightInitialized = true;
-        console.log("Iframe 高亮脚本已加载");
+        <!-- Form Glass Card -->
+        <div class="form-glass" id="formCard">
 
-        var overlay = document.createElement("div");
-        overlay.id = "iframe-highlight-overlay";
-        overlay.style.cssText =
-          "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
+          <div class="form-glass__topbar">
+            <span class="form-glass__label">
+              <i class="fa-solid fa-sliders" style="color:var(--cyan); margin-right:6px;"></i>
+              Patient Parameters
+            </span>
+            <span class="field-counter" id="fieldCounter">0 / 12 filled</span>
+          </div>
 
-        var highlightBox = document.createElement("div");
-        highlightBox.id = "iframe-highlight-box";
-        highlightBox.style.cssText =
-          "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
+          <form id="predictionForm" novalidate>
 
-        var selectedBox = document.createElement("div");
-        selectedBox.id = "iframe-selected-box";
-        selectedBox.style.cssText =
-          "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
+            <!-- GROUP 1: Demographics -->
+            <div class="field-group">
+              <div class="field-group__head">
+                <span class="field-group__num">01</span>
+                <span class="field-group__title">Demographics</span>
+              </div>
+              <div class="fields-row cols-3">
+                <div class="field-wrap">
+                  <label class="field-label" for="age">Age <em class="field-unit">yrs</em></label>
+                  <input type="number" id="age" name="age" step="any" min="1" max="120"
+                    class="field-input" placeholder="65" required />
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="sex">Biological Sex</label>
+                  <div class="select-wrap">
+                    <select id="sex" name="sex" class="field-input field-select" required>
+                      <option value="" disabled selected>Select…</option>
+                      <option value="0">Female</option>
+                      <option value="1">Male</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="time">Follow-up <em class="field-unit">days</em></label>
+                  <input type="number" id="time" name="time" step="any" min="0"
+                    class="field-input" placeholder="130" required />
+                </div>
+              </div>
+            </div>
 
-        var tagLabel = document.createElement("div");
-        tagLabel.id = "iframe-tag-label";
-        tagLabel.style.cssText =
-          "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
+            <!-- GROUP 2: Conditions -->
+            <div class="field-group">
+              <div class="field-group__head">
+                <span class="field-group__num">02</span>
+                <span class="field-group__title">Medical Conditions</span>
+              </div>
+              <div class="fields-row cols-4">
+                <div class="field-wrap">
+                  <label class="field-label" for="anaemia">Anaemia</label>
+                  <div class="select-wrap">
+                    <select id="anaemia" name="anaemia" class="field-input field-select" required>
+                      <option value="" disabled selected>Select…</option>
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="diabetes">Diabetes</label>
+                  <div class="select-wrap">
+                    <select id="diabetes" name="diabetes" class="field-input field-select" required>
+                      <option value="" disabled selected>Select…</option>
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="high_blood_pressure">High Blood Pressure</label>
+                  <div class="select-wrap">
+                    <select id="high_blood_pressure" name="high_blood_pressure" class="field-input field-select" required>
+                      <option value="" disabled selected>Select…</option>
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="smoking">Smoking</label>
+                  <div class="select-wrap">
+                    <select id="smoking" name="smoking" class="field-input field-select" required>
+                      <option value="" disabled selected>Select…</option>
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        var selectedLabel = document.createElement("div");
-        selectedLabel.id = "iframe-selected-label";
-        selectedLabel.style.cssText =
-          "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
-        overlay.appendChild(highlightBox);
-        overlay.appendChild(selectedBox);
-        overlay.appendChild(tagLabel);
-        overlay.appendChild(selectedLabel);
-        document.body.appendChild(overlay);
+            <!-- GROUP 3: Lab Values -->
+            <div class="field-group">
+              <div class="field-group__head">
+                <span class="field-group__num">03</span>
+                <span class="field-group__title">Laboratory Values</span>
+              </div>
+              <div class="fields-row cols-3">
+                <div class="field-wrap">
+                  <label class="field-label" for="ejection_fraction">
+                    Ejection Fraction <em class="field-unit">%</em>
+                  </label>
+                  <input type="number" id="ejection_fraction" name="ejection_fraction"
+                    step="any" min="0" max="100" class="field-input" placeholder="38" required />
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="serum_creatinine">
+                    Serum Creatinine <em class="field-unit">mg/dL</em>
+                  </label>
+                  <input type="number" id="serum_creatinine" name="serum_creatinine"
+                    step="any" min="0" class="field-input" placeholder="1.1" required />
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="serum_sodium">
+                    Serum Sodium <em class="field-unit">mEq/L</em>
+                  </label>
+                  <input type="number" id="serum_sodium" name="serum_sodium"
+                    step="any" min="0" class="field-input" placeholder="137" required />
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="creatinine_phosphokinase">
+                    CPK Enzyme <em class="field-unit">mcg/L</em>
+                  </label>
+                  <input type="number" id="creatinine_phosphokinase" name="creatinine_phosphokinase"
+                    step="any" min="0" class="field-input" placeholder="250" required />
+                </div>
+                <div class="field-wrap">
+                  <label class="field-label" for="platelets">
+                    Platelets <em class="field-unit">kplt/mL</em>
+                  </label>
+                  <input type="number" id="platelets" name="platelets"
+                    step="any" min="0" class="field-input" placeholder="263358" required />
+                </div>
+              </div>
+            </div>
 
-        var selectedElement = null;
-        var highlightEnabled = false;
+            <!-- Submit button -->
+            <button type="submit" id="predictBtn" class="predict-btn">
+              <span id="btnContent" class="predict-btn__content">
+                <i class="fa-solid fa-waveform-lines"></i>
+                Run Prediction
+              </span>
+              <span id="btnLoader" class="predict-btn__loader hidden" aria-hidden="true">
+                <span class="loader-track"><span class="loader-sweep"></span></span>
+                <span class="loader-text">Analyzing biomarkers…</span>
+              </span>
+            </button>
 
-        function updateSelectedHighlight(element) {
-          console.log("updateSelectedHighlight called with:", element);
-          if (!element) {
-            selectedBox.style.display = "none";
-            selectedLabel.style.display = "none";
-            selectedElement = null;
-            console.log("Cleared selected highlight");
-            return;
-          }
-          selectedElement = element;
-          var rect = element.getBoundingClientRect();
-          console.log("Selected element rect:", rect);
+            <!-- Inline error -->
+            <div id="formError" class="form-error hidden">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span id="errorText">An error occurred. Please try again.</span>
+            </div>
 
-          selectedBox.style.display = "block";
-          selectedBox.style.left = "".concat(rect.left - 2, "px");
-          selectedBox.style.top = "".concat(rect.top - 2, "px");
-          selectedBox.style.width = "".concat(rect.width + 4, "px");
-          selectedBox.style.height = "".concat(rect.height + 4, "px");
+          </form>
+        </div><!-- /form-glass -->
+      </section>
 
-          selectedLabel.style.display = "block";
-          selectedLabel.textContent = "\u2713 <".concat(
-            element.tagName.toLowerCase(),
-            ">",
-          );
+      <!-- ═══ RIGHT: DASHBOARD COLUMN ═══════════════════ -->
+      <section class="right-col">
 
-          var labelTop = rect.top - 28;
-          var labelLeft = rect.left;
+        <!-- Idle State -->
+        <div id="idlePlaceholder" class="idle-state">
+          <div class="idle-ecg" aria-hidden="true">
+            <svg viewBox="0 0 360 70" preserveAspectRatio="xMidYMid meet" class="idle-ecg__svg">
+              <polyline class="idle-ecg__line"
+                points="0,35 45,35 55,35 62,8 68,62 74,35 90,35 120,35 130,35 137,12 143,58 149,35 170,35 200,35 210,35 217,10 223,60 229,35 250,35 280,35 290,35 297,14 303,56 309,35 360,35"/>
+            </svg>
+          </div>
+          <h2 class="idle-state__title">Awaiting Analysis</h2>
+          <p class="idle-state__sub">Fill in all patient parameters and click Run Prediction to view the ensemble model results.</p>
+          <div class="idle-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
 
-          if (labelTop < 5) {
-            labelTop = rect.bottom + 5;
-          }
+        <!-- Results Panel (hidden until API responds) -->
+        <div id="resultsPanel" class="results-panel hidden">
 
-          var labelWidth = selectedLabel.offsetWidth || 100;
-          if (labelLeft + labelWidth > window.innerWidth - 10) {
-            labelLeft = window.innerWidth - labelWidth - 10;
-          }
-          selectedLabel.style.left = "".concat(Math.max(5, labelLeft), "px");
-          selectedLabel.style.top = "".concat(labelTop, "px");
-          console.log("Selected highlight positioned at:", {
-            left: selectedBox.style.left,
-            top: selectedBox.style.top,
-            width: selectedBox.style.width,
-            height: selectedBox.style.height,
-          });
-        }
-        function getElementSelector(element) {
-          if (!(element instanceof Element))
-            throw new Error("Argument must be a DOM element");
-          var segments = [];
-          var current = element;
-          while (current !== document.documentElement) {
-            var selector = "";
-            if (
-              current.id &&
-              document.querySelectorAll("#".concat(current.id)).length === 1
-            ) {
-              segments.unshift("#".concat(current.id));
-              break;
-            }
+          <!-- Consensus Banner -->
+          <div id="consensusBanner" class="consensus-banner">
+            <div id="consensusIconWrap" class="consensus-icon">
+              <i id="consensusIcon" class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div class="consensus-text">
+              <p class="consensus-label">Ensemble Consensus</p>
+              <h2 id="consensusVerdict" class="consensus-verdict"></h2>
+            </div>
+            <div class="consensus-score-wrap">
+              <p class="consensus-score-label">Agreement</p>
+              <p id="consensusScore" class="consensus-score-val"></p>
+            </div>
+          </div>
 
-            var classes = Array.from(current.classList).filter(function (c) {
-              return !c.startsWith("js-");
-            });
-            var className = classes.length > 0 ? ".".concat(classes[0]) : "";
+          <!-- 4 Model Cards Grid -->
+          <div class="model-grid" id="modelGrid">
 
-            var tag = current.tagName.toLowerCase();
-            if (!className) {
-              var siblings = Array.from(current.parentNode.children);
-              var index =
-                siblings.findIndex(function (el) {
-                  return el === current;
-                }) + 1;
-              selector = "".concat(tag, ":nth-child(").concat(index, ")");
-            } else {
-              selector = className;
-            }
-            segments.unshift(selector);
-            current = current.parentElement;
-          }
+            <!-- Decision Tree -->
+            <div class="model-card" id="card-decision_tree" style="--delay:0ms">
+              <div class="mc-header">
+                <div class="mc-icon"><i class="fa-solid fa-sitemap"></i></div>
+                <span class="mc-tag" id="tag-decision_tree"></span>
+              </div>
+              <p class="mc-name">Decision Tree</p>
+              <p class="mc-type">CART Classification</p>
+              <div class="mc-verdict" id="verdict-decision_tree">—</div>
+              <div class="mc-accent-bar" id="accentbar-decision_tree"></div>
+            </div>
 
-          if (current === document.documentElement) {
-            segments.unshift("html");
-          }
-          return segments.join(" > ");
-        }
+            <!-- KNN -->
+            <div class="model-card" id="card-knn" style="--delay:90ms">
+              <div class="mc-header">
+                <div class="mc-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+                <span class="mc-tag" id="tag-knn"></span>
+              </div>
+              <p class="mc-name">K-Nearest Neighbors</p>
+              <p class="mc-type">Similarity Matching</p>
+              <div class="mc-verdict" id="verdict-knn">—</div>
+              <div class="mc-accent-bar" id="accentbar-knn"></div>
+            </div>
 
-        function getElementText(element) {
-          var _element$textContent;
-          if (element.tagName === "INPUT") {
-            return element.value || element.placeholder || "";
-          }
-          if (element.tagName === "TEXTAREA") {
-            return element.value || element.placeholder || "";
-          }
-          var text =
-            ((_element$textContent = element.textContent) === null ||
-            _element$textContent === void 0
-              ? void 0
-              : _element$textContent.trim()) || "";
-          return text.length > 50 ? text.substring(0, 50) + "..." : text;
-        }
+            <!-- Naive Bayes -->
+            <div class="model-card" id="card-naive_bayes" style="--delay:180ms">
+              <div class="mc-header">
+                <div class="mc-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <span class="mc-tag" id="tag-naive_bayes"></span>
+              </div>
+              <p class="mc-name">Naïve Bayes</p>
+              <p class="mc-type">Bayesian Inference</p>
+              <div class="mc-verdict" id="verdict-naive_bayes">—</div>
+              <div class="mc-accent-bar" id="accentbar-naive_bayes"></div>
+            </div>
 
-        function getElementAttributes(element) {
-          var attrs = {};
-          for (var i = 0; i < element.attributes.length; i++) {
-            var attr = element.attributes[i];
-            attrs[attr.name] = attr.value;
-          }
-          return attrs;
-        }
+            <!-- Random Forest -->
+            <div class="model-card" id="card-random_forest" style="--delay:270ms">
+              <div class="mc-header">
+                <div class="mc-icon"><i class="fa-solid fa-tree"></i></div>
+                <span class="mc-tag" id="tag-random_forest"></span>
+              </div>
+              <p class="mc-name">Random Forest</p>
+              <p class="mc-type">Ensemble Voting</p>
+              <div class="mc-verdict" id="verdict-random_forest">—</div>
+              <div class="mc-accent-bar" id="accentbar-random_forest"></div>
+            </div>
 
-        function handleMouseOver(e) {
-          if (!highlightEnabled) return;
-          var target = e.target;
-          if (
-            !target ||
-            target === overlay ||
-            target === highlightBox ||
-            target === tagLabel ||
-            target === selectedBox ||
-            target === selectedLabel
-          ) {
-            return;
-          }
+          </div><!-- /model-grid -->
 
-          if (target === document.documentElement || target === document.body) {
-            return;
-          }
+          <p class="disclaimer">
+            <i class="fa-regular fa-circle-info"></i>
+            For clinical decision-support purposes only. Does not replace professional medical diagnosis.
+          </p>
 
-          if (target === selectedElement) {
-            highlightBox.style.display = "none";
-            tagLabel.style.display = "none";
-            return;
-          }
-          var rect = target.getBoundingClientRect();
-          var selector = getElementSelector(target);
-          var text = getElementText(target);
-          var attributes = getElementAttributes(target);
+        </div><!-- /resultsPanel -->
+      </section>
 
-          highlightBox.style.display = "block";
-          highlightBox.style.left = "".concat(rect.left - 2, "px");
-          highlightBox.style.top = "".concat(rect.top - 2, "px");
-          highlightBox.style.width = "".concat(rect.width + 4, "px");
-          highlightBox.style.height = "".concat(rect.height + 4, "px");
+    </div><!-- /layout-grid -->
+  </main>
 
-          tagLabel.style.display = "block";
-          tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
-
-          var labelTop = rect.top - 22;
-          var labelLeft = rect.left;
-
-          if (labelTop < 0) {
-            labelTop = rect.bottom + 5;
-          }
-
-          if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
-            labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
-          }
-          tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
-          tagLabel.style.top = "".concat(labelTop, "px");
-
-          var elementInfo = {
-            tagName: target.tagName.toLowerCase(),
-            rect: {
-              left: rect.left,
-              top: rect.top,
-              right: rect.right,
-              bottom: rect.bottom,
-              width: rect.width,
-              height: rect.height,
-              x: rect.x,
-              y: rect.y,
-            },
-            selector: selector,
-            text: text,
-            attributes: attributes,
-            url: window.location.href,
-            path: window.location.pathname,
-            timestamp: Date.now(),
-          };
-          try {
-            window.parent.postMessage(
-              {
-                type: "iframe-element-hover",
-                data: elementInfo,
-                source: "iframe-highlight-injector",
-              },
-              "*",
-            );
-          } catch (error) {
-            console.warn("无法发送消息到父窗口:", error);
-          }
-        }
-
-        function handleMouseOut(e) {
-          if (!highlightEnabled) return;
-          var relatedTarget = e.relatedTarget;
-
-          if (
-            relatedTarget &&
-            (relatedTarget === highlightBox ||
-              relatedTarget === tagLabel ||
-              relatedTarget === overlay ||
-              relatedTarget === selectedBox ||
-              relatedTarget === selectedLabel)
-          ) {
-            return;
-          }
-          highlightBox.style.display = "none";
-          tagLabel.style.display = "none";
-          try {
-            window.parent.postMessage(
-              {
-                type: "iframe-element-hover",
-                data: null,
-                source: "iframe-highlight-injector",
-              },
-              "*",
-            );
-          } catch (error) {
-            console.warn("无法发送消息到父窗口:", error);
-          }
-        }
-
-        function handleClick(e) {
-          var target = e.target;
-          if (
-            !target ||
-            target === overlay ||
-            target === highlightBox ||
-            target === tagLabel ||
-            target === selectedBox ||
-            target === selectedLabel
-          ) {
-            return;
-          }
-
-          if (target === document.documentElement || target === document.body) {
-            return;
-          }
-
-          var isInteractiveElement = [
-            "input",
-            "textarea",
-            "select",
-            "button",
-            "a",
-          ].includes(target.tagName.toLowerCase());
-
-          if (highlightEnabled) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-          var rect = target.getBoundingClientRect();
-          var selector = getElementSelector(target);
-          var text = getElementText(target);
-          var attributes = getElementAttributes(target);
-          console.log("Element clicked:", {
-            tagName: target.tagName,
-            selector: selector,
-            rect: rect,
-          });
-
-          updateSelectedHighlight(target);
-
-          highlightBox.style.display = "none";
-          tagLabel.style.display = "none";
-          var elementInfo = {
-            tagName: target.tagName.toLowerCase(),
-            rect: {
-              left: rect.left,
-              top: rect.top,
-              right: rect.right,
-              bottom: rect.bottom,
-              width: rect.width,
-              height: rect.height,
-              x: rect.x,
-              y: rect.y,
-            },
-            selector: selector,
-            text: text,
-            attributes: attributes,
-            url: window.location.href,
-            path: window.location.pathname,
-            timestamp: Date.now(),
-          };
-          try {
-            window.parent.postMessage(
-              {
-                type: "iframe-element-click",
-                data: elementInfo,
-                source: "iframe-highlight-injector",
-              },
-              "*",
-            );
-          } catch (error) {
-            console.warn("无法发送消息到父窗口:", error);
-          }
-        }
-
-        function handleParentMessage(event) {
-          console.log("Received message from parent:", event.data);
-          if (event.data.type === "iframe-highlight-toggle") {
-            var enabled = event.data.enabled;
-            console.log("Highlight toggle:", enabled);
-            if (enabled) {
-              enableHighlight();
-            } else {
-              disableHighlight();
-            }
-          } else if (event.data.type === "enable-iframe-highlight") {
-            console.log("Enable iframe highlight");
-            enableHighlight();
-          } else if (event.data.type === "disable-iframe-highlight") {
-            console.log("Disable iframe highlight");
-            disableHighlight();
-          } else if (event.data.type === "toggle-iframe-highlight") {
-            var _enabled =
-              event.data.enabled !== undefined
-                ? event.data.enabled
-                : !highlightEnabled;
-            console.log("Toggle iframe highlight to:", _enabled);
-            if (_enabled) {
-              enableHighlight();
-            } else {
-              disableHighlight();
-            }
-          } else if (event.data.type === "update-selected-element") {
-            var selector = event.data.selector;
-            console.log("Update selected element with selector:", selector);
-            if (selector) {
-              try {
-                var element = document.querySelector(selector);
-                console.log("Found element by selector:", element);
-                updateSelectedHighlight(element);
-              } catch (error) {
-                console.warn("Failed to select element:", error);
-                updateSelectedHighlight(null);
-              }
-            } else {
-              updateSelectedHighlight(null);
-            }
-          } else if (event.data.type === "clear-selected-element") {
-            console.log("Clear selected element");
-            updateSelectedHighlight(null);
-          }
-        }
-
-        function enableHighlight() {
-          console.log("Enabling highlight");
-          document.addEventListener("mouseover", handleMouseOver, true);
-          document.addEventListener("mouseout", handleMouseOut, true);
-          document.addEventListener("click", handleClick, true);
-          highlightEnabled = true;
-          overlay.style.display = "block";
-        }
-
-        function disableHighlight() {
-          console.log("Disabling highlight");
-          highlightEnabled = false;
-
-          highlightBox.style.display = "none";
-          tagLabel.style.display = "none";
-        }
-
-        function fullyDisableHighlight() {
-          console.log("Fully disabling highlight");
-          highlightEnabled = false;
-          document.removeEventListener("mouseover", handleMouseOver, true);
-          document.removeEventListener("mouseout", handleMouseOut, true);
-          document.removeEventListener("click", handleClick, true);
-          overlay.style.display = "none";
-          highlightBox.style.display = "none";
-          tagLabel.style.display = "none";
-          selectedBox.style.display = "none";
-          selectedLabel.style.display = "none";
-        }
-
-        enableHighlight();
-        window.addEventListener("message", handleParentMessage);
-
-        window.__iframeHighlightControl = {
-          enable: enableHighlight,
-          disable: disableHighlight,
-          fullyDisable: fullyDisableHighlight,
-          isEnabled: function isEnabled() {
-            return highlightEnabled;
-          },
-          getSelectedElement: function getSelectedElement() {
-            return selectedElement;
-          },
-          updateSelected: updateSelectedHighlight,
-          sendToggleMessage: function sendToggleMessage(enabled) {
-            window.parent.postMessage(
-              {
-                type: "iframe-highlight-status",
-                enabled: enabled || highlightEnabled,
-                source: "iframe-highlight-injector",
-              },
-              "*",
-            );
-          },
-        };
-
-        try {
-          window.parent.postMessage(
-            {
-              type: "iframe-highlight-ready",
-              data: {
-                url: window.location.href,
-                userAgent: navigator.userAgent,
-                timestamp: Date.now(),
-              },
-              source: "iframe-highlight-injector",
-            },
-            "*",
-          );
-        } catch (error) {
-          console.warn("无法发送就绪消息到父窗口:", error);
-        }
-
-        window.__iframeHighlightCleanup = function () {
-          fullyDisableHighlight();
-          window.removeEventListener("message", handleParentMessage);
-          if (overlay.parentElement) {
-            overlay.parentElement.removeChild(overlay);
-          }
-          delete window.__iframeHighlightInitialized;
-          delete window.__iframeHighlightCleanup;
-        };
-      })();
-    </script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>

@@ -27,15 +27,21 @@ ROOT_DIR = os.path.dirname(BACKEND_DIR)
 DATABASE_PATH = os.path.join(ROOT_DIR, "Database", "HeartFailure_DB.db")
 FRONTEND_DIR = os.path.join(ROOT_DIR, "Frontend")
 try:
-    scaler = joblib.load(os.path.join(MODELS_DIR, "scaler.pkl"))
-    dt_model = joblib.load(os.path.join(MODELS_DIR, "decision_tree_model.pkl"))
-    knn_model = joblib.load(os.path.join(MODELS_DIR, "knn_model.pkl"))
-    nb_model = joblib.load(os.path.join(MODELS_DIR, "naive_bayes_model.pkl"))
-    rf_model = joblib.load(os.path.join(MODELS_DIR, "random_forest_model.pkl"))
-       
-    print("✅ Tüm modeller ve Scaler başarıyla yüklendi!")
-except Exception as e:
-    print(f"❌ Modeller yüklenirken hata oluştu: {e}")
+            db_path = DATABASE_DIR + "/HeartFailure_DB.db"
+            with sqlite3.connect(db_path) as conn:
+                cursor = conn.cursor()
+                all_values = raw_features + [rf_pred]
+                cursor.execute('''
+                    INSERT INTO heart_failure_records
+                    (age, anaemia, creatinine_phosphokinase, diabetes, ejection_fraction,
+                     high_blood_pressure, platelets, serum_creatinine, serum_sodium,
+                     sex, smoking, time, DEATH_EVENT)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', all_values)
+                conn.commit()
+                print("✅ Veri başarıyla veritabanına kaydedildi.")
+        except Exception as db_error:
+            print(f"⚠️ Veritabanı kayıt hatası: {db_error}")
  
 # ==========================================
 # 2. Hastadan alınacak verilerin formatını belirle (Görev 7.2)

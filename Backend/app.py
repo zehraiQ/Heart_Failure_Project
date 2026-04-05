@@ -5,6 +5,7 @@ import numpy as np
 import sqlite3
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
  
 app = FastAPI(title="Heart Failure Prediction API")
 app.add_middleware(
@@ -66,9 +67,7 @@ def preprocess_data(raw_features: list):
 # ==========================================
 # 4. Yönlendirmeler (Routes)
 # ==========================================
-@app.get("/")
-def health_check():
-    return {"status": "success", "message": "FastAPI sunucusu başarıyla çalışıyor!"}
+
  
 @app.post("/predict")
 def make_prediction(data: PatientData):
@@ -119,3 +118,8 @@ def make_prediction(data: PatientData):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Tahmin yapılırken hata oluştu: {str(e)}")
+     # ==========================================
+# 5.(Frontend)
+# ==========================================
+frontend_path = os.path.join("..", "Frontend")
+app.mount("/", StaticFiles(directory=frontend_path, html=True), name="Frontend")

@@ -205,7 +205,7 @@ form.addEventListener('submit', async (e) => {
   const startTime = Date.now();
 
   try {
-    const response = await fetch('/predict', {
+    const response = await fetch('https://heart-failure-project.onrender.com/predict', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),

@@ -1,525 +1,262 @@
-/**
- * Heart Failure Prediction System
- * Main JavaScript Module
- *
- * Handles form submission, API integration, and UI updates
- */
+/* ══════════════════════════════════════════════════════════════
+   CardioSense — script.js
+   Heart Failure Prediction System
+   All UI text strictly in English.
+══════════════════════════════════════════════════════════════ */
 
-(function() {
-    'use strict';
+'use strict';
 
-    // ===================================
-    // Configuration
-    // ===================================
+// ── Config ──────────────────────────────────────────────────
+const API_URL       = 'http://localhost:8000/predict';
+const MIN_LOAD_MS   = 1100; // minimum loading animation duration
 
-    const CONFIG = {
-        API_ENDPOINT: 'http://localhost:8000/predict',
-        PREDICTION_LABELS: {
-            0: 'Healthy',
-            1: 'Risk of Heart Failure'
-        },
-        ANIMATION_DURATION: 500,
-        TOAST_DURATION: 3000
-    };
+// ── Model metadata ───────────────────────────────────────────
+const MODELS = [
+  { key: 'decision_tree', label: 'Decision Tree',       tag: 'Tree-Based'     },
+  { key: 'knn',           label: 'KNN',                 tag: 'Instance-Based' },
+  { key: 'naive_bayes',   label: 'Naïve Bayes',         tag: 'Probabilistic'  },
+  { key: 'random_forest', label: 'Random Forest',       tag: 'Ensemble'       },
+];
 
-    // ===================================
-    // DOM Elements
-    // ===================================
+// ── DOM handles ──────────────────────────────────────────────
+const form             = document.getElementById('predictionForm');
+const predictBtn       = document.getElementById('predictBtn');
+const btnContent       = document.getElementById('btnContent');
+const btnLoader        = document.getElementById('btnLoader');
+const formError        = document.getElementById('formError');
+const errorText        = document.getElementById('errorText');
+const fieldCounterEl   = document.getElementById('fieldCounter');
+const idlePlaceholder  = document.getElementById('idlePlaceholder');
+const resultsPanel     = document.getElementById('resultsPanel');
+const consensusBanner  = document.getElementById('consensusBanner');
+const consensusIconWrap= document.getElementById('consensusIconWrap');
+const consensusIcon    = document.getElementById('consensusIcon');
+const consensusVerdict = document.getElementById('consensusVerdict');
+const consensusScore   = document.getElementById('consensusScore');
 
-    const DOM = {
-        form: document.getElementById('predictionForm'),
-        resetBtn: document.getElementById('resetBtn'),
-        predictBtn: document.getElementById('predictBtn'),
-        initialState: document.getElementById('initialState'),
-        loadingState: document.getElementById('loadingState'),
-        resultsState: document.getElementById('resultsState'),
-        errorMessage: document.getElementById('errorMessage'),
-        errorText: document.getElementById('errorText'),
-        toastMessage: document.getElementById('toastMessage'),
-        resultToast: document.getElementById('resultToast'),
-        summaryText: document.getElementById('summaryText'),
-        // Result cards
-        knnCard: document.getElementById('knnCard'),
-        knnResult: document.getElementById('knnResult'),
-        knnFooter: document.getElementById('knnFooter'),
-        naiveBayesCard: document.getElementById('naiveBayesCard'),
-        naiveBayesResult: document.getElementById('naiveBayesResult'),
-        naiveBayesFooter: document.getElementById('naiveBayesFooter'),
-        decisionTreeCard: document.getElementById('decisionTreeCard'),
-        decisionTreeResult: document.getElementById('decisionTreeResult'),
-        decisionTreeFooter: document.getElementById('decisionTreeFooter'),
-        randomForestCard: document.getElementById('randomForestCard'),
-        randomForestResult: document.getElementById('randomForestResult'),
-        randomForestFooter: document.getElementById('randomForestFooter')
-    };
+// ── Field completion counter ──────────────────────────────────
+const allFields = Array.from(form.querySelectorAll('input, select'));
 
-    // ===================================
-    // State Management
-    // ===================================
+function updateFieldCounter() {
+  const filled = allFields.filter(el => el.value.trim() !== '' && el.value !== '').length;
+  fieldCounterEl.textContent = `${filled} / 12 filled`;
+  fieldCounterEl.classList.toggle('full', filled === 12);
+}
 
-    let state = {
-        isLoading: false,
-        lastResults: null
-    };
+allFields.forEach(el => {
+  el.addEventListener('input',  updateFieldCounter);
+  el.addEventListener('change', updateFieldCounter);
+});
 
-    // ===================================
-    // Utility Functions
-    // ===================================
+// ── Build payload — exact keys for FastAPI Pydantic model ────
+function buildPayload() {
+  return {
+    age:                      parseFloat(document.getElementById('age').value),
+    anaemia:                  parseInt(document.getElementById('anaemia').value, 10),
+    creatinine_phosphokinase: parseFloat(document.getElementById('creatinine_phosphokinase').value),
+    diabetes:                 parseInt(document.getElementById('diabetes').value, 10),
+    ejection_fraction:        parseFloat(document.getElementById('ejection_fraction').value),
+    high_blood_pressure:      parseInt(document.getElementById('high_blood_pressure').value, 10),
+    platelets:                parseFloat(document.getElementById('platelets').value),
+    serum_creatinine:         parseFloat(document.getElementById('serum_creatinine').value),
+    serum_sodium:             parseFloat(document.getElementById('serum_sodium').value),
+    sex:                      parseInt(document.getElementById('sex').value, 10),
+    smoking:                  parseInt(document.getElementById('smoking').value, 10),
+    time:                     parseFloat(document.getElementById('time').value),
+  };
+}
 
-    /**
-     * Show toast notification
-     * @param {string} message - Message to display
-     * @param {string} type - Toast type (success/error)
-     */
-    function showToast(message, type = 'success') {
-        const toastEl = DOM.resultToast;
-        const toastMessageEl = DOM.toastMessage;
+// ── Loading state ────────────────────────────────────────────
+function setLoading(on) {
+  predictBtn.disabled = on;
+  btnContent.classList.toggle('hidden', on);
+  btnLoader.classList.toggle('hidden', !on);
+}
 
-        toastMessageEl.textContent = message;
-        toastEl.classList.remove('bg-success', 'bg-danger');
-        toastEl.classList.add(type === 'success' ? 'bg-success text-white' : 'bg-danger text-white');
+// ── Error display ─────────────────────────────────────────────
+function showError(msg) {
+  errorText.textContent = msg;
+  formError.classList.remove('hidden');
+}
 
-        const toast = new bootstrap.Toast(toastEl, {
-            animation: true,
-            autohide: true,
-            delay: CONFIG.TOAST_DURATION
-        });
-        toast.show();
+function hideError() {
+  formError.classList.add('hidden');
+}
+
+// ── Highlight invalid fields ──────────────────────────────────
+function markInvalidFields() {
+  allFields.forEach(el => {
+    if (!el.checkValidity()) {
+      el.classList.add('is-invalid');
+      const clear = () => {
+        el.classList.remove('is-invalid');
+        el.removeEventListener('input',  clear);
+        el.removeEventListener('change', clear);
+      };
+      el.addEventListener('input',  clear);
+      el.addEventListener('change', clear);
+    }
+  });
+}
+
+// ── Render a single model card ────────────────────────────────
+function renderCard(key, value) {
+  const card     = document.getElementById(`card-${key}`);
+  const tagEl    = document.getElementById(`tag-${key}`);
+  const verdictEl= document.getElementById(`verdict-${key}`);
+  const barEl    = document.getElementById(`accentbar-${key}`);
+
+  // Clear previous states
+  card.classList.remove('is-safe', 'is-risk');
+
+  // Restart animation for stagger effect
+  card.style.animation = 'none';
+  void card.offsetWidth; // force reflow
+  card.style.animation = '';
+
+  if (value === 0) {
+    card.classList.add('is-safe');
+    tagEl.textContent     = 'Healthy';
+    verdictEl.textContent = 'Low Risk — Healthy';
+  } else {
+    card.classList.add('is-risk');
+    tagEl.textContent     = 'At Risk';
+    verdictEl.textContent = 'High Risk — Cardiac Alert';
+  }
+}
+
+// ── Render the consensus banner ───────────────────────────────
+function renderConsensus(data) {
+  const riskCount = MODELS.filter(m => data[m.key] === 1).length;
+  const safeCount = MODELS.length - riskCount;
+
+  // Icon + color class
+  consensusIconWrap.className = 'consensus-icon';
+
+  if (riskCount === 0) {
+    consensusIconWrap.classList.add('consensus-icon--safe');
+    consensusIcon.className  = 'fa-solid fa-heart-circle-check';
+    consensusVerdict.textContent = 'No Risk Detected — Patient Appears Healthy';
+    consensusVerdict.style.color = 'var(--safe)';
+  } else if (riskCount === MODELS.length) {
+    consensusIconWrap.classList.add('consensus-icon--risk');
+    consensusIcon.className  = 'fa-solid fa-heart-circle-exclamation';
+    consensusVerdict.textContent = 'High Risk — All Models Flag Heart Failure';
+    consensusVerdict.style.color = 'var(--risk)';
+  } else {
+    consensusIconWrap.classList.add('consensus-icon--mixed');
+    consensusIcon.className  = 'fa-solid fa-heart-circle-xmark';
+    consensusVerdict.textContent = `Mixed Signal — ${riskCount} of 4 Models Flag Risk`;
+    consensusVerdict.style.color = '#fbbf24';
+  }
+
+  consensusScore.textContent = `${safeCount} safe / ${riskCount} risk`;
+}
+
+// ── Main render: paint the full dashboard ────────────────────
+function renderResults(data) {
+  // Validate required keys exist
+  const missing = MODELS.map(m => m.key).filter(k => !(k in data));
+  if (missing.length) {
+    throw new Error(`Unexpected API response. Missing keys: ${missing.join(', ')}`);
+  }
+
+  // Switch idle → results
+  idlePlaceholder.classList.add('hidden');
+  resultsPanel.classList.remove('hidden');
+
+  // Consensus
+  renderConsensus(data);
+
+  // Individual cards (stagger is via CSS --delay custom property)
+  MODELS.forEach(({ key }) => renderCard(key, data[key]));
+}
+
+// ── Reset dashboard back to idle ──────────────────────────────
+function resetDashboard() {
+  resultsPanel.classList.add('hidden');
+  idlePlaceholder.classList.remove('hidden');
+
+  MODELS.forEach(({ key }) => {
+    const card     = document.getElementById(`card-${key}`);
+    const tagEl    = document.getElementById(`tag-${key}`);
+    const verdictEl= document.getElementById(`verdict-${key}`);
+    card.classList.remove('is-safe', 'is-risk');
+    tagEl.textContent     = '';
+    verdictEl.textContent = '—';
+  });
+}
+
+// ── Form submit handler ───────────────────────────────────────
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideError();
+
+  // HTML5 native validation
+  if (!form.checkValidity()) {
+    markInvalidFields();
+    showError('Please complete all 12 fields before running the prediction.');
+    return;
+  }
+
+  const payload = buildPayload();
+
+  setLoading(true);
+  const startTime = Date.now();
+
+  try {
+    const response = await fetch(API_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+
+    // Enforce minimum loading duration for UX polish
+    const elapsed   = Date.now() - startTime;
+    const remaining = MIN_LOAD_MS - elapsed;
+    if (remaining > 0) await sleep(remaining);
+
+    if (!response.ok) {
+      let detail = `Server error: HTTP ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body.detail) detail = String(body.detail);
+      } catch (_) { /* ignore parse failures */ }
+      throw new Error(detail);
     }
 
-    /**
-     * Sleep utility for animations
-     * @param {number} ms - Milliseconds to sleep
-     */
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    /**
-     * Validate form inputs
-     * @returns {boolean} Whether form is valid
-     */
-    function validateForm() {
-        const form = DOM.form;
-        let isValid = true;
-
-        // Get all form controls
-        const formControls = form.querySelectorAll('.form-control, .form-select');
-
-        formControls.forEach(control => {
-            // Reset validation state
-            control.classList.remove('is-invalid');
-
-            // Check validity
-            if (!control.checkValidity()) {
-                control.classList.add('is-invalid');
-                isValid = false;
-            }
-        });
-
-        // Bootstrap validation
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
-    /**
-     * Collect form data
-     * @returns {Object} Form data object
-     */
-    function collectFormData() {
-        const formData = new FormData(DOM.form);
-        const data = {};
-
-        for (let [key, value] of formData.entries()) {
-            // Convert to number if applicable
-            const numValue = Number(value);
-            data[key] = isNaN(numValue) ? value : numValue;
-        }
-
-        return data;
-    }
-
-    /**
-     * Set button loading state
-     * @param {boolean} loading - Whether to show loading state
-     */
-    function setButtonLoading(loading) {
-        const btnText = DOM.predictBtn.querySelector('.btn-text');
-        const btnLoading = DOM.predictBtn.querySelector('.btn-loading');
-
-        if (loading) {
-            btnText.classList.add('d-none');
-            btnLoading.classList.remove('d-none');
-            DOM.predictBtn.disabled = true;
-        } else {
-            btnText.classList.remove('d-none');
-            btnLoading.classList.add('d-none');
-            DOM.predictBtn.disabled = false;
-        }
-    }
-
-    /**
-     * Show/hide result states
-     * @param {string} stateName - State to show ('initial', 'loading', 'results')
-     */
-    function showState(stateName) {
-        // Hide all states
-        DOM.initialState.classList.add('d-none');
-        DOM.loadingState.classList.add('d-none');
-        DOM.resultsState.classList.add('d-none');
-        DOM.errorMessage.classList.add('d-none');
-
-        // Show requested state
-        switch (stateName) {
-            case 'initial':
-                DOM.initialState.classList.remove('d-none');
-                break;
-            case 'loading':
-                DOM.loadingState.classList.remove('d-none');
-                break;
-            case 'results':
-                DOM.resultsState.classList.remove('d-none');
-                break;
-        }
-    }
-
-    /**
-     * Update a single result card
-     * @param {string} cardId - Card element ID
-     * @param {string} resultId - Result element ID
-     * @param {string} footerId - Footer element ID
-     * @param {number} prediction - Prediction value (0 or 1)
-     */
-    function updateResultCard(cardId, resultId, footerId, prediction) {
-        const card = document.getElementById(cardId);
-        const result = document.getElementById(resultId);
-        const footer = document.getElementById(footerId);
-
-        // Remove existing classes
-        card.classList.remove('healthy', 'risk');
-
-        // Add appropriate class and content
-        if (prediction === 0) {
-            card.classList.add('healthy');
-            result.querySelector('.result-value').textContent = CONFIG.PREDICTION_LABELS[0];
-            result.querySelector('.result-label').textContent = 'Healthy';
-            footer.querySelector('.status-badge').textContent = 'Healthy';
-        } else if (prediction === 1) {
-            card.classList.add('risk');
-            result.querySelector('.result-value').textContent = CONFIG.PREDICTION_LABELS[1];
-            result.querySelector('.result-label').textContent = 'At Risk';
-            footer.querySelector('.status-badge').textContent = 'Heart Failure Risk';
-        } else {
-            result.querySelector('.result-value').textContent = 'Unknown';
-            result.querySelector('.result-label').textContent = 'Prediction';
-            footer.querySelector('.status-badge').textContent = 'Error';
-        }
-    }
-
-    /**
-     * Update all result cards with predictions
-     * @param {Object} results - API response object
-     */
-    function updateResults(results) {
-        // Update KNN
-        updateResultCard('knnCard', 'knnResult', 'knnFooter', results.knn);
-
-        // Update Naive Bayes
-        updateResultCard('naiveBayesCard', 'naiveBayesResult', 'naiveBayesFooter', results.naive_bayes);
-
-        // Update Decision Tree
-        updateResultCard('decisionTreeCard', 'decisionTreeResult', 'decisionTreeFooter', results.decision_tree);
-
-        // Update Random Forest
-        updateResultCard('randomForestCard', 'randomForestResult', 'randomForestFooter', results.random_forest);
-
-        // Generate summary
-        const predictions = [
-            results.knn,
-            results.naive_bayes,
-            results.decision_tree,
-            results.random_forest
-        ];
-
-        const riskCount = predictions.filter(p => p === 1).length;
-        const healthyCount = predictions.filter(p => p === 0).length;
-
-        let summary = '';
-        if (riskCount >= 3) {
-            summary = `⚠️ High Risk Alert: ${riskCount} out of 4 models predict heart failure risk. ` +
-                      'Immediate clinical consultation is strongly recommended.';
-        } else if (riskCount >= 2) {
-            summary = `⚡ Moderate Risk: ${riskCount} out of 4 models indicate potential heart failure risk. ` +
-                      'Further cardiac evaluation may be warranted.';
-        } else if (riskCount >= 1) {
-            summary = `ℹ️ Low Risk: ${riskCount} out of 4 models suggest possible risk. ` +
-                      'Consider routine follow-up monitoring.';
-        } else {
-            summary = `✅ Low Risk: All ${healthyCount} models predict healthy status. ` +
-                      'No immediate concerns based on the provided clinical parameters.';
-        }
-
-        DOM.summaryText.textContent = summary;
-
-        // Store results
-        state.lastResults = results;
-    }
-
-    /**
-     * Reset all result cards to initial state
-     */
-    function resetResultCards() {
-        const cards = [
-            { card: 'knnCard', result: 'knnResult', footer: 'knnFooter' },
-            { card: 'naiveBayesCard', result: 'naiveBayesResult', footer: 'naiveBayesFooter' },
-            { card: 'decisionTreeCard', result: 'decisionTreeResult', footer: 'decisionTreeFooter' },
-            { card: 'randomForestCard', result: 'randomForestResult', footer: 'randomForestFooter' }
-        ];
-
-        cards.forEach(({ card, result, footer }) => {
-            document.getElementById(card).classList.remove('healthy', 'risk');
-            document.getElementById(result).querySelector('.result-value').textContent = '--';
-            document.getElementById(result).querySelector('.result-label').textContent = 'Prediction';
-            document.getElementById(footer).querySelector('.status-badge').textContent = 'Awaiting';
-        });
-
-        DOM.summaryText.textContent = '--';
-    }
-
-    /**
-     * Show error message
-     * @param {string} message - Error message to display
-     */
-    function showError(message) {
-        DOM.errorText.textContent = message;
-        DOM.errorMessage.classList.remove('d-none');
-    }
-
-    /**
-     * Reset form to initial state
-     */
-    function resetForm() {
-        DOM.form.reset();
-        DOM.form.classList.remove('was-validated');
-
-        // Reset validation styles
-        const formControls = DOM.form.querySelectorAll('.form-control, .form-select');
-        formControls.forEach(control => {
-            control.classList.remove('is-valid', 'is-invalid');
-        });
-
-        // Reset results
-        resetResultCards();
-        showState('initial');
-    }
-
-    // ===================================
-    // API Functions
-    // ===================================
-
-    /**
-     * Send prediction request to API
-     * @param {Object} data - Form data to send
-     * @returns {Promise<Object>} API response
-     */
-    async function sendPredictionRequest(data) {
-        const response = await fetch(CONFIG.API_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(data),
-            mode: 'cors'
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
-    }
-
-    /**
-     * Handle form submission
-     * @param {Event} event - Submit event
-     */
-    async function handleSubmit(event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        // Validate form
-        if (!validateForm()) {
-            showToast('Please fill in all required fields correctly.', 'error');
-            return;
-        }
-
-        // Check if already loading
-        if (state.isLoading) {
-            return;
-        }
-
-        // Collect data
-        const formData = collectFormData();
-
-        // Show loading state
-        state.isLoading = true;
-        setButtonLoading(true);
-        showState('loading');
-
-        try {
-            // Send API request
-            const results = await sendPredictionRequest(formData);
-
-            // Validate response
-            if (!results || typeof results !== 'object') {
-                throw new Error('Invalid response from server');
-            }
-
-            // Update UI with results
-            await sleep(CONFIG.ANIMATION_DURATION);
-            updateResults(results);
-            showState('results');
-
-            // Show success toast
-            const riskCount = [results.knn, results.naive_bayes, results.decision_tree, results.random_forest]
-                .filter(p => p === 1).length;
-
-            if (riskCount >= 3) {
-                showToast('High Risk Detected! Please consult a cardiologist.', 'error');
-            } else if (riskCount >= 1) {
-                showToast('Prediction Complete - Further evaluation may be needed.', 'warning');
-            } else {
-                showToast('Prediction Complete - Patient appears healthy.', 'success');
-            }
-
-        } catch (error) {
-            console.error('Prediction Error:', error);
-
-            // Show error state
-            showState('initial');
-
-            // Provide user-friendly error message
-            let errorMessage = 'Unable to connect to the prediction server. ';
-
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                errorMessage += 'Please ensure the backend server is running at ' + CONFIG.API_ENDPOINT;
-            } else if (error.message.includes('HTTP error')) {
-                errorMessage = 'Server error occurred. Please try again later.';
-            } else {
-                errorMessage += error.message || 'Please check your connection and try again.';
-            }
-
-            showError(errorMessage);
-            showToast('Prediction failed. Please try again.', 'error');
-        } finally {
-            // Reset loading state
-            state.isLoading = false;
-            setButtonLoading(false);
-        }
-    }
-
-    /**
-     * Handle reset button click
-     * @param {Event} event - Click event
-     */
-    function handleReset(event) {
-        event.preventDefault();
-        resetForm();
-        showToast('Form has been reset.', 'success');
-    }
-
-    // ===================================
-    // Event Listeners
-    // ===================================
-
-    function initEventListeners() {
-        // Form submission
-        DOM.form.addEventListener('submit', handleSubmit);
-
-        // Reset button
-        DOM.resetBtn.addEventListener('click', handleReset);
-
-        // Input validation on blur
-        const formControls = DOM.form.querySelectorAll('.form-control, .form-select');
-        formControls.forEach(control => {
-            control.addEventListener('blur', function() {
-                if (this.value !== '') {
-                    if (this.checkValidity()) {
-                        this.classList.remove('is-invalid');
-                        this.classList.add('is-valid');
-                    } else {
-                        this.classList.remove('is-valid');
-                        this.classList.add('is-invalid');
-                    }
-                }
-            });
-
-            // Remove validation on input
-            control.addEventListener('input', function() {
-                if (this.classList.contains('is-invalid')) {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href !== '#') {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
-            });
-        });
-    }
-
-    // ===================================
-    // Initialization
-    // ===================================
-
-    function init() {
-        // Initialize event listeners
-        initEventListeners();
-
-        // Show initial state
-        showState('initial');
-
-        // Log initialization
-        console.log('Heart Failure Prediction System initialized successfully');
-        console.log('API Endpoint:', CONFIG.API_ENDPOINT);
-    }
-
-    // Start application when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    // ===================================
-    // Export for testing (if needed)
-    // ===================================
-
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = {
-            CONFIG,
-            validateForm,
-            collectFormData,
-            updateResults
-        };
-    }
-
-})();
+    const data = await response.json();
+    renderResults(data);
+
+  } catch (err) {
+    // Ensure loading runs its minimum duration even on failure
+    const elapsed   = Date.now() - startTime;
+    const remaining = MIN_LOAD_MS - elapsed;
+    if (remaining > 0) await sleep(remaining);
+
+    console.error('[CardioSense] Prediction error:', err);
+
+    const isFetchFail = err.message?.toLowerCase().includes('failed to fetch') ||
+                        err.message?.toLowerCase().includes('networkerror');
+
+    showError(
+      isFetchFail
+        ? 'Cannot connect to the prediction API. Please ensure the FastAPI server is running at localhost:8000.'
+        : err.message || 'An unexpected error occurred. Please try again.'
+    );
+
+    resetDashboard();
+
+  } finally {
+    setLoading(false);
+  }
+});
+
+// ── Clear error when user edits any field ─────────────────────
+form.addEventListener('input',  hideError);
+form.addEventListener('change', hideError);
+
+// ── Utility ──────────────────────────────────────────────────
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

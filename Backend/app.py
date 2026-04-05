@@ -19,7 +19,9 @@ app.add_middleware(
 # ==========================================
 # 1. Sunucu başlatıldığında modelleri yükle (Görev 6.2)
 # ==========================================
-MODELS_DIR = "models"
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
  
 try:
     scaler = joblib.load(os.path.join(MODELS_DIR, "scaler.pkl"))

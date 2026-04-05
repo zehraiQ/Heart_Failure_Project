@@ -22,7 +22,10 @@ app.add_middleware(
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
- 
+ PARENT_DIR = os.path.dirname(BASE_DIR)
+ROOT_DIR = os.path.dirname(BACKEND_DIR)
+DATABASE_PATH = os.path.join(ROOT_DIR, "Database", "HeartFailure_DB.db")
+FRONTEND_DIR = os.path.join(ROOT_DIR, "Frontend")
 try:
     scaler = joblib.load(os.path.join(MODELS_DIR, "scaler.pkl"))
     dt_model = joblib.load(os.path.join(MODELS_DIR, "decision_tree_model.pkl"))
